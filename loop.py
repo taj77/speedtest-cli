@@ -24,7 +24,7 @@ def get_network_speed():
 def main():
     while True:
         time_now = datetime.now(timezone.utc).strftime("%m/%d/%Y, %H:%M:%S")
-        
+        print("Iteration 1.")
         bw = get_network_speed()
         body = {
         "error": bw["error"],

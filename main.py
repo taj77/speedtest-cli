@@ -1,54 +1,48 @@
-from fastapi import FastAPI, Request
+from fastapi import Depends, FastAPI, HTTPException, Request
+from sqlalchemy.orm import Session
 from fastapi.templating import Jinja2Templates
-from pydantic import BaseModel
-from datetime import datetime
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import HTMLResponse
+from sql_app import crud, models, schemas
+from sql_app.database import SessionLocal, engine
 
-class Item(BaseModel): # class for storing bandwidth
-    error: bool
-    upload: float
-    download: float
-    ping: float
-    time: str
-
+models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
 
-bandwidth = Item
-bandwidth.error = True
-bandwidth.upload = 0
-bandwidth.download = 0
-bandwidth.ping = 0
+
+# Dependency
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
 
 templates = Jinja2Templates(directory="templates")
+app.mount("/static", StaticFiles(directory="static"), name="static")
 
-@app.get("/")
-async def name(request: Request):
-    return templates.TemplateResponse("home.html", {"request": request, "bandwidth": bandwidth})
+@app.get("/", response_class=HTMLResponse) #Home
+async def name(request: Request, db: Session = Depends(get_db)):
+    return templates.TemplateResponse("home.html", context={"request":request, "bandwidth": read_latest_value(db), "bandwidthTuple" : Gather_Entries_Start_to_End(0,20,db)})
 
-@app.get("/bandwidth")
-async def receive_bandwidth():
-    if bandwidth.error != True:
-        return {"upload": bandwidth.upload, "download": bandwidth.download, "ping":bandwidth.ping, "time":bandwidth.time}
-    else:
-        return {"Error": "Bandwidth has not been uploaded yet"}
-    #speed = get_network_speed()
-    #return speed
-    #if speed["error"] == "False":
-    #    return speed
-    #else:
-    #    return {"error": "True"}
+@app.post("/upload/", response_model=schemas.Band)
+def create_bandwidth(user: schemas.Band, db: Session = Depends(get_db)):
+    return crud.create_bw(db=db, user=user)
 
 
+@app.get("/recent/", response_model=schemas.Band)
+def read_latest_value(db: Session = Depends(get_db)):
+    return crud.get_recent(db)
 
-@app.post("/upload")
-async def upload_bandwidth(item: Item):
-    item_dict = item.dict()
-    if item_dict["error"] != True:
-        bandwidth.error = False
-        bandwidth.upload = float(item_dict["upload"])
-        bandwidth.download = float(item_dict["download"])
-        bandwidth.upload = round(bandwidth.upload, 1)
-        bandwidth.download = round(bandwidth.download, 1)
-        bandwidth.ping = item_dict["ping"]
-        bandwidth.time = item_dict["time"]
-    return item_dict
+@app.get("/count/")
+def count_bw_Probably_Dont_Need(db: Session = Depends(get_db)):
+    return crud.get_num_data(db)
+
+@app.get("/recentBandwidths/", response_model=list[schemas.Band]) #delete response_model if errors.
+def Gather_Entries_Start_to_End(start: int, end:int, db: Session = Depends(get_db)):
+    db_user = crud.get_bw(db, skip=start, limit=end)
+    if db_user is None:
+        raise HTTPException(status_code=404, detail="No Entries yet")
+    return db_user
+
