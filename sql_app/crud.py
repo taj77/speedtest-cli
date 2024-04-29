@@ -9,9 +9,8 @@ def get_recent(db: Session):
 def get_num_data(db: Session):
     return db.query(models.Band).count()
 
-def get_bw(db: Session, skip: int = 0, limit: int = 20): # can probably get rid of the lmit & skip
+def get_bw(db: Session, limit: int = 20): # can probably get rid of the lmit & skip
     return db.query(models.Band).order_by(models.Band.id.desc()).limit(limit).all()
-    #return db.query(models.Band).offset(skip).limit(limit).all() OLD
 
 
 def create_bw(db: Session, user: schemas.Band): #schemas.BandCreate):
@@ -22,7 +21,9 @@ def create_bw(db: Session, user: schemas.Band): #schemas.BandCreate):
     if (Upload == 0 and Download == 0):
         Error = True
 
-    time_now = datetime.now(timezone.utc).strftime("%m/%d/%Y, %H:%M:%S")
+    # Shift hour over 4 hours, does not account for daylight savings.
+    time_now = datetime.now(timezone.utc) - timedelta(hours=4)
+    time_now = time_now.strftime("%m/%d/%Y, %H:%M:%S") # Format into normal time.
     db_user = models.Band(date=time_now, upload=Upload, download=Download, error=Error, ping=Ping)
     db.add(db_user)
     db.commit()

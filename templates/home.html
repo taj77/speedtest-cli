@@ -19,13 +19,6 @@
         Upload Speed: <span id="upload-speed">4</span> MB/s
       </div>
     </div>
-    <!--
-        <div class = "parent">
-            <div class="div1"> 
-                <b>no data to display yet</b>
-            </div>
-        </div>
-        -->
   </body>
 
   <style>
@@ -57,9 +50,10 @@
 
   <script>
     async function requestRecent1() {
-      var response = await fetch(
-        "https://computernetworks-project.onrender.com/recent/"
-      ); // URL of hosted, would be 127.0.0.1:8000/recent if local
+      const render_url =
+        "https://computernetworks-project.onrender.com/recent/";
+      const local_url = "http://127.0.0.1:8000/recent/";
+      var response = await fetch(local_url); // switch from local_url to render_url if HOSTED
       var data = await response.json();
       console.log(data);
       document.getElementById("upload-speed").textContent = data.upload;

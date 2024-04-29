@@ -1,13 +1,12 @@
 from pydantic import BaseModel
 
+
+# Schema for how the API Requests need to be
 class BandBase(BaseModel):
     date: str
     upload: float
     download : float
     ping: float
-
-#class BandCreate(BandBase):
-#    ping: float
 
 
 class Band(BandBase):
@@ -16,12 +15,3 @@ class Band(BandBase):
 
     class Config:
         orm_mode = True
-
-"""
-class BandDict(BandBase):
-    error: bool
-    download : float
-    date: str
-    id: int
-    upload: float
-"""
