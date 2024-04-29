@@ -3,3 +3,6 @@ pydantic==1.10.15
 uvicorn
 jinja2
 sqlalchemy
+requests
+speedtest-cli
+pytz
