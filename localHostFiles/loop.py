@@ -7,7 +7,7 @@ from datetime import datetime, timezone
 
 GLOBAL_URL = "https://computernetworks-project.onrender.com/"
 LOCAL_URL = "http://127.0.0.1:8000/" # Change LOCAL_URL if needed
-STALL_DURATION = 900 # Number of seconds between bandwidth data being sent to API
+STALL_DURATION = 5 # Number of seconds between bandwidth data being sent to API
 
 # Function to gather network metrics
 def get_network_speed():
@@ -17,7 +17,6 @@ def get_network_speed():
     down_speed=0
     up_speed=0
     ping = 0
-    print(st.get_best_server())
     try:
         down_speed = st.download() # gather Up and Down speed from request
         up_speed = st.upload()
@@ -29,14 +28,15 @@ def get_network_speed():
 # Infinite Loop to run on local machine.
 # Will upload data via post request to Endpoint hosted on Render at GLOBAL_URL
 def main():
+    count = 0
     while True:
         time_now = datetime.now(timezone.utc).strftime("%m/%d/%Y, %H:%M:%S")
-        print("Iteration 1.")
+        print(f"Iteration {count}.")
         bw = get_network_speed()
         body = {
         "error": bw["error"],
-        "upload": bw["upload"]/1000000,
-        "download": bw["download"]/1000000,
+        "upload": int(bw["upload"]/1000000),
+        "download": int(bw["download"]/1000000),
         "ping": bw["ping"],
         "date": time_now,
         "id": 0  # ID does not matter, but is required for schema.
@@ -45,6 +45,7 @@ def main():
         # API POST REQUEST TO 
         r = requests.post(LOCAL_URL+"upload", data=json_data)
         time.sleep(STALL_DURATION)
+        count = count + 1
 
 if __name__ == '__main__':
     main()

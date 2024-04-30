@@ -38,8 +38,8 @@ async def name(request: Request, db: Session = Depends(get_db)):
         down_average = down_average  +download_arr[i]
         i = i + 1
         pass
-    up_average = up_average/entries_size
-    down_average = down_average/entries_size
+    up_average = int(up_average/entries_size)
+    down_average = int(down_average/entries_size)
     
     return templates.TemplateResponse("home.html", context={"request":request, "bandwidth": read_latest_value(db),
      "uploads": upload_arr, "downloads": download_arr, "uploadAverage" : up_average, "downloadAverage" : down_average})
