@@ -24,7 +24,25 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 
 @app.get("/", response_class=HTMLResponse) #Home
 async def name(request: Request, db: Session = Depends(get_db)):
-    return templates.TemplateResponse("home.html", context={"request":request, "bandwidth": read_latest_value(db)})
+    entries_size = 10
+    data_json = Gather_Entries_Start_to_End(entries_size,db)
+    upload_arr = [0]*entries_size
+    download_arr = [0]*entries_size
+    up_average = 0
+    down_average = 0
+    i = 0
+    for items in data_json:
+        upload_arr[i] = items.upload
+        download_arr[i] = items.download
+        up_average = up_average + upload_arr[i]
+        down_average = down_average  +download_arr[i]
+        i = i + 1
+        pass
+    up_average = up_average/entries_size
+    down_average = down_average/entries_size
+    
+    return templates.TemplateResponse("home.html", context={"request":request, "bandwidth": read_latest_value(db),
+     "uploads": upload_arr, "downloads": download_arr, "uploadAverage" : up_average, "downloadAverage" : down_average})
 
 # Post request for upload bandwidth from local host to API
 @app.post("/upload/", response_model=schemas.Band)
