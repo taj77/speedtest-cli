@@ -101,7 +101,7 @@ src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.js">
 <script>
 
     async function getData() {
-      const getDataURL = "http://127.0.0.1:8000/recentBandwidths/?Limit=10";
+      const getDataURL = "http://127.0.0.1:8000/recentBandwidths/?Limit=12";
       var response = await fetch(getDataURL); // switch from local_url to render_url if HOSTED
       var data = await response.json();
 
@@ -132,15 +132,12 @@ src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.js">
           uploadArr.push(tempUp);
           downloadArr.push(tempDown);
           timeArr.push(item.date)
-            //uploadArr[i]= parseInt(item.upload);
-            //downloadArr[i] = parseInt(item.download);
-            //console.log(uploadArr[i]);
           });
         
-        const xValues = [100,200,300,400,500,600,700,800,900,1000];
         console.log(uploadArr);
         new Chart("myChart", {
           type: "line",
+          indexAxis : "time",
           data: {
             labels: timeArr,
             datasets: [{

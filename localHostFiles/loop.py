@@ -7,7 +7,7 @@ from datetime import datetime, timezone
 
 GLOBAL_URL = "https://computernetworks-project.onrender.com/"
 LOCAL_URL = "http://127.0.0.1:8000/" # Change LOCAL_URL if needed
-STALL_DURATION = 5 # Number of seconds between bandwidth data being sent to API
+STALL_DURATION = 1800 # Number of seconds between bandwidth data being sent to API
 
 # Function to gather network metrics
 def get_network_speed():
