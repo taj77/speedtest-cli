@@ -10,7 +10,12 @@
   <title>Network Monitor</title>
 
   <body>
-    <div class="parent">
+    <div class="header">
+
+    <h1>SPEEDTEST-CLI Data</h1>
+
+    </div>
+    <div class="parent" id="data-container">
       <div class="div1">last updated: <span id="date-time">4</span></div>
       <div class="div2">
         Download Speed <span id="download-speed">4</span> MB/s
@@ -22,6 +27,11 @@
   </body>
 
   <style>
+    .header{
+      display: flex;
+      justify-content: center;
+    }
+
     .parent {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
@@ -49,6 +59,42 @@
   </style>
 
   <script>
+
+    async function getData() {
+      const getDataURL = "http://127.0.0.1:8000/recentBandwidths/?Limit=10";
+      var response = await fetch(getDataURL); // switch from local_url to render_url if HOSTED
+      var data = await response.json();
+
+      return data;
+    }
+
+    async function displayData() {
+        const data = await getData();
+        const container = document.getElementById("data-container");
+
+        data.forEach((item, index) => {
+          const divDate = document.createElement("div");
+          divDate.textContent = `Date: ${item.date}`;
+          divDate.classList.add("div1");
+
+          const divDownload = document.createElement("div");
+          divDownload.textContent = `Download Speed: ${item.download} MB/s`;
+          divDownload.classList.add("div2");
+
+          const divUpload = document.createElement("div");
+          divUpload.textContent = `Upload Speed: ${item.upload} MB/s`;
+          divUpload.classList.add("div3");
+
+          container.appendChild(divDate);
+          container.appendChild(divDownload);
+          container.appendChild(divUpload);
+        });
+      }
+
+      document.addEventListener("DOMContentLoaded", () => {
+        displayData();
+      });
+
     async function requestRecent1() {
       const render_url =
         "https://computernetworks-project.onrender.com/recent/";
