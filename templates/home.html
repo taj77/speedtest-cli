@@ -1,28 +1,51 @@
 <!DOCTYPE html>
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+<link
+  href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css"
+  rel="stylesheet"
+  integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC"
+  crossorigin="anonymous"
+/>
+<link rel="shortcut icon" href="#">
 <script src="../static/script.js"></script>
+<script
+src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.js">
+</script>
+
 <html>
     <title>Network Monitor</title>
     
     <body>
+        <div class="header">
+
+            <h1>Network Bandwidth Monitor</h1>
+        
+            </div>
         <div class="parent">
                 <div class="div1"> 
-                    last updated: <span id="date-time">4</span>
+                    last updated: <span id="date-time">N/A</span>
                 </div>
                 <div class="div2">
-                    Download Speed <span id="download-speed">4</span> MB/s
+                    Download Speed <span id="download-speed">N/A</span> MBs
                 </div>
                 <div class="div3"> 
-                    Upload Speed: <span id="upload-speed">4</span>  MB/s
+                    Upload Speed: <span id="upload-speed">N/A</span>  MBs
+                </div>
+                <div class="div4">
+                    Average download speed: {{downloadAverage}} MBs
+                </div>
+                <div class="div5">
+                    Average Upload speed: {{uploadAverage}} MBs
                 </div>
         </div>
-        <!--
-        <div class = "parent">
-            <div class="div1"> 
-                <b>no data to display yet</b>
+        <div class="container1">
+            <h2>6 hour data graph</h2>
+            <div class="graphParent">
+                <!-- Your graph HTML code goes here -->
+                <canvas id="myChart" style="width:100%;max-width:750px"></canvas>
+                <!-- Or whatever your graph content is -->
             </div>
         </div>
-        -->
+
        
        
        
@@ -32,6 +55,10 @@
 
 
 <style>
+    .header{
+        display: flex;
+        justify-content: center;
+      }
     .parent {
         display: grid;
         grid-template-columns: repeat(3, 1fr);
@@ -40,7 +67,7 @@
         grid-row-gap: 0px;
         
         }
-        .div1,.div2,.div3
+        .div1,.div2,.div3,.div4,.div5
         {
             margin: 10%;
             padding: 10px;
@@ -50,22 +77,95 @@
         .div1 { grid-area: 1 / 1 / 2 / 2; }
         .div2 { grid-area: 1 / 2 / 2 / 3; }
         .div3 { grid-area: 1 / 3 / 2 / 4; }
+        .container1 {
+            display: grid;
+            place-items: center;
+            text-align: center;
+        }
+    
+        .graphParent {
+            border: 1px solid #ccc;
+            padding: 20px;
+            max-width: 750px;
+            width: 100%;
+            margin-top: 10px; /* Adjust the margin as needed */
+        }
+    
+        #myChart {
+            width: 100%;
+        }
 </style>
 
+
+
 <script>
-    async function requestRecent1(){
-        var response = await fetch('https://computernetworks-project.onrender.com/recent/'); // URL of hosted, would be 127.0.0.1:8000/recent if local
-        var data = await response.json();
-        console.log(data);
-        document.getElementById("upload-speed").textContent = data.upload;
-        document.getElementById("download-speed").textContent = data.download;
-        document.getElementById("date-time").textContent = data.date;
-        return data;
-      }
-      
+
+    async function getData() {
+      const getDataURL = "https://computernetworks-project.onrender.com/recentBandwidths/?Limit=12";
+      var response = await fetch(getDataURL); // switch from local_url to render_url if HOSTED
+      var data = await response.json();
+
+      return data;
+    }
+
+    async function requestRecent1() {
+      const render_url =
+        "https://computernetworks-project.onrender.com/recent/";
+      const local_url = "http://127.0.0.1:8000/recent/";
+      var response = await fetch(render_url); // switch from local_url to render_url if HOSTED
+      var data = await response.json();
+      document.getElementById("upload-speed").textContent = data.upload;
+      document.getElementById("download-speed").textContent = data.download;
+      document.getElementById("date-time").textContent = data.date;
+      return data;
+    }
+    // UploadChart
+    async function CreateGraph(){
+        const data = await getData();
+        const uploadArr = [];
+        const downloadArr = [];
+        const timeArr = [];
+        let i =0;
+        data.forEach((item, index) => {
+          let tempUp = parseInt(item.upload);
+          let tempDown = parseInt(item.download);
+          uploadArr.push(tempUp);
+          downloadArr.push(tempDown);
+          timeArr.push(item.date)
+          });
+        
+        console.log(uploadArr);
+        new Chart("myChart", {
+          type: "line",
+          indexAxis : "time",
+          data: {
+            labels: timeArr,
+            datasets: [{
+              data: downloadArr,
+              borderColor: "red",
+              fill: false,
+              label : "Download Speed (MBs)"
+            },{
+              data: uploadArr,
+              borderColor: "blue",
+              fill: false,
+              label: "Upload Speed (MBs)"
+            }]
+          },
+          options: {
+            legend: {display: true}
+          }
+        
+        
+      });
+        return uploadArr;
+
+    }
+    const data3 = CreateGraph();
     const temp = requestRecent1();
-    
 </script>
+
+
 
 
 </html>
